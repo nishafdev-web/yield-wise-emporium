@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import ProductCard from "./ProductCard";
+import { useProducts } from "@/hooks/useProducts";
 import { 
-  Filter, 
   Search, 
   Grid3X3, 
   List,
@@ -13,109 +14,47 @@ import {
 } from "lucide-react";
 import productImage from "@/assets/product-pesticide-1.jpg";
 
-// Mock product data
-const mockProducts = [
-  {
-    id: "1",
-    name: "Premium Organic Insecticide - Natural Plant Protection",
-    image: productImage,
-    price: 45.99,
-    originalPrice: 59.99,
-    rating: 4.8,
-    reviewCount: 128,
-    category: "Insecticides",
-    isOrganic: true,
-    safetyLevel: "high" as const,
-    inStock: true,
-    discount: 23,
-  },
-  {
-    id: "2", 
-    name: "Advanced Fungicide for Crop Disease Prevention",
-    image: productImage,
-    price: 32.50,
-    rating: 4.6,
-    reviewCount: 94,
-    category: "Fungicides",
-    isOrganic: false,
-    safetyLevel: "medium" as const,
-    inStock: true,
-  },
-  {
-    id: "3",
-    name: "Bio-Based Herbicide - Weed Control Solution",
-    image: productImage,
-    price: 67.99,
-    originalPrice: 79.99,
-    rating: 4.9,
-    reviewCount: 203,
-    category: "Herbicides",
-    isOrganic: true,
-    safetyLevel: "high" as const,
-    inStock: false,
-    discount: 15,
-  },
-  {
-    id: "4",
-    name: "Multi-Purpose Plant Fertilizer with Micronutrients",
-    image: productImage,
-    price: 28.75,
-    rating: 4.4,
-    reviewCount: 76,
-    category: "Fertilizers",
-    isOrganic: false,
-    safetyLevel: "high" as const,
-    inStock: true,
-  },
-  {
-    id: "5",
-    name: "Professional Rodenticide - Farm Protection",
-    image: productImage,
-    price: 89.99,
-    rating: 4.2,
-    reviewCount: 45,
-    category: "Rodenticides",
-    isOrganic: false,
-    safetyLevel: "low" as const,
-    inStock: true,
-  },
-  {
-    id: "6",
-    name: "Organic Soil Conditioner - Root Enhancement",
-    image: productImage,
-    price: 24.99,
-    originalPrice: 34.99,
-    rating: 4.7,
-    reviewCount: 156,
-    category: "Soil Care",
-    isOrganic: true,
-    safetyLevel: "high" as const,
-    inStock: true,
-    discount: 29,
-  },
-];
+// Transform product data for ProductCard component
+const transformProduct = (product: any, averageRating: number = 4.5, reviewCount: number = 0) => ({
+  id: product.id,
+  name: product.name,
+  image: product.image_url || productImage,
+  price: product.price,
+  originalPrice: product.original_price,
+  rating: averageRating,
+  reviewCount,
+  category: product.category,
+  isOrganic: product.is_organic,
+  safetyLevel: product.safety_level as "high" | "medium" | "low",
+  inStock: product.stock > 0,
+  discount: product.original_price ? 
+    Math.round(((product.original_price - product.price) / product.original_price) * 100) : 
+    undefined,
+});
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSafety, setSelectedSafety] = useState("all");
-  const [isOrganic, setIsOrganic] = useState(false);
+  const [isOrganic, setIsOrganic] = useState<boolean | undefined>(undefined);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Extract unique categories
-  const categories = ["all", ...Array.from(new Set(mockProducts.map(p => p.category)))];
-
-  // Filter products
-  const filteredProducts = mockProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-    const matchesSafety = selectedSafety === "all" || product.safetyLevel === selectedSafety;
-    const matchesOrganic = !isOrganic || product.isOrganic;
-    
-    return matchesSearch && matchesCategory && matchesSafety && matchesOrganic;
+  // Fetch products from Supabase
+  const { products, loading, error } = useProducts({
+    category: selectedCategory === "all" ? undefined : selectedCategory,
+    search: searchQuery || undefined,
+    safetyLevel: selectedSafety === "all" ? undefined : selectedSafety,
+    isOrganic: isOrganic,
   });
+
+  // Extract unique categories from products
+  const categories = ["all", ...Array.from(new Set(products.map(p => p.category)))];
+
+  // Transform products for ProductCard component
+  const transformedProducts = products.map(product => 
+    transformProduct(product, 4.5, Math.floor(Math.random() * 200) + 50)
+  );
 
   const handleAddToCart = (id: string) => {
     console.log("Added to cart:", id);
@@ -169,7 +108,7 @@ const ProductGrid = () => {
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 Filters
-                {(selectedCategory !== "all" || selectedSafety !== "all" || isOrganic) && (
+                {(selectedCategory !== "all" || selectedSafety !== "all" || isOrganic === true) && (
                   <Badge className="ml-2 bg-primary text-primary-foreground">
                     Active
                   </Badge>
@@ -198,7 +137,7 @@ const ProductGrid = () => {
             </div>
 
             <div className="text-sm text-muted-foreground">
-              {filteredProducts.length} products found
+              {loading ? "Loading..." : `${transformedProducts.length} products found`}
             </div>
           </div>
 
@@ -252,8 +191,8 @@ const ProductGrid = () => {
                     <input
                       type="checkbox"
                       id="organic"
-                      checked={isOrganic}
-                      onChange={(e) => setIsOrganic(e.target.checked)}
+                      checked={isOrganic === true}
+                      onChange={(e) => setIsOrganic(e.target.checked ? true : undefined)}
                       className="rounded border-border text-primary focus:ring-primary"
                     />
                     <label htmlFor="organic" className="text-sm text-foreground">
@@ -269,7 +208,7 @@ const ProductGrid = () => {
                     onClick={() => {
                       setSelectedCategory("all");
                       setSelectedSafety("all");
-                      setIsOrganic(false);
+                      setIsOrganic(undefined);
                       setSearchQuery("");
                     }}
                     className="w-full"
@@ -283,29 +222,55 @@ const ProductGrid = () => {
         </div>
 
         {/* Products Grid */}
-        <div className={`grid gap-6 ${
-          viewMode === "grid" 
-            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
-            : "grid-cols-1"
-        }`}>
-          {filteredProducts.map((product, index) => (
-            <div
-              key={product.id}
-              className="animate-scale-in"
-              style={{animationDelay: `${index * 0.1}s`}}
-            >
-              <ProductCard
-                {...product}
-                onAddToCart={handleAddToCart}
-                onAddToWishlist={handleAddToWishlist}
-                onViewDetails={handleViewDetails}
-              />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className={`grid gap-6 ${
+            viewMode === "grid" 
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              : "grid-cols-1"
+          }`}>
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="space-y-4">
+                <Skeleton className="aspect-square rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Error Loading Products
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {error}
+            </p>
+          </div>
+        ) : (
+          <div className={`grid gap-6 ${
+            viewMode === "grid" 
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              : "grid-cols-1"
+          }`}>
+            {transformedProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-scale-in"
+                style={{animationDelay: `${index * 0.1}s`}}
+              >
+                <ProductCard
+                  {...product}
+                  onAddToCart={handleAddToCart}
+                  onAddToWishlist={handleAddToWishlist}
+                  onViewDetails={handleViewDetails}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* No Results */}
-        {filteredProducts.length === 0 && (
+        {!loading && transformedProducts.length === 0 && !error && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -319,7 +284,7 @@ const ProductGrid = () => {
                 setSearchQuery("");
                 setSelectedCategory("all");
                 setSelectedSafety("all");
-                setIsOrganic(false);
+                setIsOrganic(undefined);
               }}
             >
               Clear All Filters
