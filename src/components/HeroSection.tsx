@@ -10,6 +10,7 @@ import {
 import heroImage from "@/assets/hero-agriculture.jpg";
 
 const HeroSection = () => {
+  console.log("HeroSection component rendering");
   const features = [
     {
       icon: <Shield className="w-5 h-5" />,

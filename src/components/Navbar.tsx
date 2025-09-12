@@ -29,6 +29,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ cartItemsCount = 0 }: NavbarProps) => {
+  console.log("Navbar component rendering");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
