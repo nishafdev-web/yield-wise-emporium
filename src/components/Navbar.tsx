@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, UserIcon, ShoppingBag, Heart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { 
+  LogOut, 
+  User,
+  ShoppingBag, 
+  Heart,
   Search, 
   ShoppingCart, 
   Menu, 
@@ -101,7 +104,7 @@ const Navbar = ({ cartItemsCount = 0 }: NavbarProps) => {
 
             {/* User Account */}
             <Button variant="ghost" size="icon" className="hover-scale">
-              <UserIcon className="w-5 h-5" />
+              <User className="w-5 h-5" />
             </Button>
 
             {/* Mobile Menu Button */}
