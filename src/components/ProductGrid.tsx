@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductCard from "./ProductCard";
 import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
 import { 
   Search, 
   Grid3X3, 
@@ -32,7 +33,11 @@ const transformProduct = (product: any, averageRating: number = 4.5, reviewCount
     undefined,
 });
 
-const ProductGrid = () => {
+interface ProductGridProps {
+  searchQuery?: string;
+}
+
+const ProductGrid = ({ searchQuery: externalSearchQuery }: ProductGridProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSafety, setSelectedSafety] = useState("all");
@@ -40,10 +45,23 @@ const ProductGrid = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Use cart functionality
+  const { addToCart } = useCart();
+
+  // Use external search query if provided, otherwise use internal state
+  const activeSearchQuery = externalSearchQuery || searchQuery;
+
+  // Update internal search when external search changes
+  useEffect(() => {
+    if (externalSearchQuery !== undefined) {
+      setSearchQuery(externalSearchQuery);
+    }
+  }, [externalSearchQuery]);
+
   // Fetch products from Supabase
   const { products, loading, error } = useProducts({
     category: selectedCategory === "all" ? undefined : selectedCategory,
-    search: searchQuery || undefined,
+    search: activeSearchQuery || undefined,
     safetyLevel: selectedSafety === "all" ? undefined : selectedSafety,
     isOrganic: isOrganic,
   });
@@ -56,19 +74,18 @@ const ProductGrid = () => {
     transformProduct(product, 4.5, Math.floor(Math.random() * 200) + 50)
   );
 
-  const handleAddToCart = (id: string) => {
-    console.log("Added to cart:", id);
-    // Implement cart logic here
+  const handleAddToCart = async (id: string) => {
+    await addToCart(id, 1);
   };
 
   const handleAddToWishlist = (id: string) => {
     console.log("Added to wishlist:", id);
-    // Implement wishlist logic here
+    // TODO: Implement wishlist logic here
   };
 
   const handleViewDetails = (id: string) => {
     console.log("View details:", id);
-    // Implement navigation to product details
+    // TODO: Navigate to product details page
   };
 
   return (
