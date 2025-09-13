@@ -41,8 +41,13 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch) {
-      onSearch(searchQuery);
+    if (onSearch && searchQuery.trim()) {
+      onSearch(searchQuery.trim());
+      // Scroll to products section when searching
+      const productsSection = document.getElementById('products');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -50,6 +55,16 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
     navigate('/');
     if (onSearch) {
       onSearch(''); // Clear search when going home
+    }
+  };
+
+  const handleNavClick = (href: string, name: string) => {
+    if (href.startsWith('#')) {
+      const sectionId = href.slice(2); // Remove "/#"
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -82,13 +97,13 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
           <div className="hidden lg:flex items-center space-x-8">
             {navigationItems.map((item) => (
               item.href.startsWith('#') ? (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
+                  onClick={() => handleNavClick(item.href, item.name)}
                   className="text-foreground hover:text-primary transition-smooth font-medium"
                 >
                   {item.name}
-                </a>
+                </button>
               ) : (
                 <Link
                   key={item.name}
@@ -231,14 +246,16 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
             <div className="px-2 py-3 space-y-1">
               {navigationItems.map((item) => (
                 item.href.startsWith('#') ? (
-                  <a
+                  <button
                     key={item.name}
-                    href={item.href}
-                    className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-smooth font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => {
+                      handleNavClick(item.href, item.name);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-smooth font-medium"
                   >
                     {item.name}
-                  </a>
+                  </button>
                 ) : (
                   <Link
                     key={item.name}

@@ -11,6 +11,20 @@ import heroImage from "@/assets/hero-agriculture.jpg";
 
 const HeroSection = () => {
   console.log("HeroSection component rendering");
+  
+  const handleShopNow = () => {
+    const productsSection = document.getElementById('products');
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSafetyGuide = () => {
+    const safetySection = document.getElementById('safety');
+    if (safetySection) {
+      safetySection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   const features = [
     {
       icon: <Shield className="w-5 h-5" />,
@@ -76,6 +90,7 @@ const HeroSection = () => {
                 <Button 
                   size="lg" 
                   className="bg-accent hover:bg-accent-light text-accent-foreground shadow-lg hover-lift group"
+                  onClick={handleShopNow}
                 >
                   Shop Now
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-smooth" />
@@ -85,6 +100,7 @@ const HeroSection = () => {
                   size="lg" 
                   variant="outline" 
                   className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-sm"
+                  onClick={handleSafetyGuide}
                 >
                   Safety Guide
                 </Button>

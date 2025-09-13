@@ -2,6 +2,9 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import ProductGrid from "@/components/ProductGrid";
+import CategoriesSection from "@/components/CategoriesSection";
+import SafetySection from "@/components/SafetySection";
+import AboutSection from "@/components/AboutSection";
 import { useCart } from "@/hooks/useCart";
 
 const Index = () => {
@@ -18,6 +21,9 @@ const Index = () => {
       <Navbar cartItemsCount={cartCount} onSearch={handleSearch} />
       <HeroSection />
       <ProductGrid searchQuery={searchQuery} />
+      <CategoriesSection />
+      <SafetySection />
+      <AboutSection />
     </div>
   );
 };

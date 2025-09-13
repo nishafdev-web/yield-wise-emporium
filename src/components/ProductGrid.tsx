@@ -89,7 +89,7 @@ const ProductGrid = ({ searchQuery: externalSearchQuery }: ProductGridProps) => 
   };
 
   return (
-    <section className="py-16 bg-gradient-subtle">
+    <section id="products" className="py-16 bg-gradient-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 animate-fade-in">
