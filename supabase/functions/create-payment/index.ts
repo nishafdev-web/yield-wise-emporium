@@ -93,17 +93,20 @@ serve(async (req) => {
       if (itemError) throw itemError;
     }
 
+    // Determine origin for redirect URLs with safe fallbacks
+    const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "http://localhost:3000";
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/payment-cancel`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/payment-cancel`,
       metadata: {
-        order_id: orderData.id,
-        user_id: user.id
+        order_id: String(orderData.id),
+        user_id: String(user.id)
       }
     });
 
