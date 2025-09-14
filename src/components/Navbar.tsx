@@ -41,7 +41,7 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch && searchQuery.trim()) {
+    if (onSearch) {
       onSearch(searchQuery.trim());
       // Scroll to products section when searching
       const productsSection = document.getElementById('products');
@@ -59,20 +59,23 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
   };
 
   const handleNavClick = (href: string, name: string) => {
-    if (href.startsWith('#')) {
-      const sectionId = href.slice(2); // Remove "/#"
+    const hashIndex = href.indexOf('#');
+    if (hashIndex !== -1) {
+      const sectionId = href.slice(hashIndex + 1);
       const element = document.getElementById(sectionId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
+    } else {
+      navigate(href);
     }
   };
 
   const navigationItems = [
     { name: "Products", href: "/" },
-    { name: "Categories", href: "/#categories" },
-    { name: "Safety Guide", href: "/#safety" },
-    { name: "About", href: "/#about" },
+    { name: "Categories", href: "#categories" },
+    { name: "Safety Guide", href: "#safety" },
+    { name: "About", href: "#about" },
   ];
 
   return (
@@ -96,7 +99,7 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navigationItems.map((item) => (
-              item.href.startsWith('#') ? (
+              item.href.includes('#') ? (
                 <button
                   key={item.name}
                   onClick={() => handleNavClick(item.href, item.name)}
@@ -245,7 +248,7 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
           <div className="lg:hidden border-t border-border animate-slide-up">
             <div className="px-2 py-3 space-y-1">
               {navigationItems.map((item) => (
-                item.href.startsWith('#') ? (
+                item.href.includes('#') ? (
                   <button
                     key={item.name}
                     onClick={() => {
