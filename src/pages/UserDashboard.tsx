@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/dashboard/AppSidebar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ProfileManagement from '@/components/dashboard/ProfileManagement';
 import OrderHistory from '@/components/dashboard/OrderHistory';
 import CartManagement from '@/components/dashboard/CartManagement';
-import { User, Package, ShoppingCart, Settings } from 'lucide-react';
+import NotificationsPanel from '@/components/dashboard/NotificationsPanel';
+import { User, Package, ShoppingCart, Settings, Bell, BarChart3, TrendingUp } from 'lucide-react';
 
 const UserDashboard = () => {
-  const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  const { user, profile, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
 
   if (loading) {
     return (
@@ -24,59 +27,178 @@ const UserDashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar cartItemsCount={0} />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">Manage your account and orders</p>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'profile':
+        return <ProfileManagement />;
+      case 'orders':
+        return <OrderHistory />;
+      case 'cart':
+        return <CartManagement />;
+      case 'notifications':
+        return <NotificationsPanel />;
+      case 'settings':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>Manage your account preferences</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Account settings coming soon...</p>
+            </CardContent>
+          </Card>
+        );
+      default:
+        return (
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Orders
+                  </CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">12</div>
+                  <p className="text-xs text-muted-foreground">
+                    +2 from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Cart Items
+                  </CardTitle>
+                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">3</div>
+                  <p className="text-xs text-muted-foreground">
+                    Items ready for checkout
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Spent
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹2,450</div>
+                  <p className="text-xs text-muted-foreground">
+                    +₹180 from last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Active Status
+                  </CardTitle>
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Active</div>
+                  <p className="text-xs text-muted-foreground">
+                    Account in good standing
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Welcome back, {profile?.full_name || 'User'}!</CardTitle>
+                  <CardDescription>
+                    Here's what's happening with your account today.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                      <Bell className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">New notifications</p>
+                        <p className="text-xs text-muted-foreground">
+                          You have 2 new notifications to review
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                      <Package className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Order updates</p>
+                        <p className="text-xs text-muted-foreground">
+                          Your recent orders are being processed
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>
+                    Manage your account quickly
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2">
+                    <a 
+                      href="/dashboard?tab=profile" 
+                      className="flex items-center gap-3 p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <User className="h-4 w-4 text-primary" />
+                      <span className="text-sm">Update Profile</span>
+                    </a>
+                    <a 
+                      href="/dashboard?tab=orders" 
+                      className="flex items-center gap-3 p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Package className="h-4 w-4 text-primary" />
+                      <span className="text-sm">View Orders</span>
+                    </a>
+                    <a 
+                      href="/dashboard?tab=cart" 
+                      className="flex items-center gap-3 p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <ShoppingCart className="h-4 w-4 text-primary" />
+                      <span className="text-sm">Manage Cart</span>
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
+        );
+    }
+  };
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="orders" className="flex items-center gap-2">
-                <Package className="h-4 w-4" />
-                Orders
-              </TabsTrigger>
-              <TabsTrigger value="cart" className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4" />
-                Cart
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="profile" className="space-y-6">
-              <ProfileManagement />
-            </TabsContent>
-
-            <TabsContent value="orders" className="space-y-6">
-              <OrderHistory />
-            </TabsContent>
-
-            <TabsContent value="cart" className="space-y-6">
-              <CartManagement />
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-6">
-              <div className="bg-card p-6 rounded-lg border">
-                <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
-                <p className="text-muted-foreground">Account settings coming soon...</p>
-              </div>
-            </TabsContent>
-          </Tabs>
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <div className="flex-1">
+          <header className="h-14 flex items-center border-b bg-background px-4">
+            <SidebarTrigger className="mr-4" />
+            <div>
+              <h1 className="text-xl font-semibold">Dashboard</h1>
+            </div>
+          </header>
+          <main className="flex-1 p-6">
+            {renderContent()}
+          </main>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

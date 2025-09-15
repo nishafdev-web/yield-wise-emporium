@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/useCart";
+import LogoutButton from "./LogoutButton";
 import { 
   LogOut, 
   User,
@@ -192,8 +193,8 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                    Logout
+                  <DropdownMenuItem asChild>
+                    <LogoutButton />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
