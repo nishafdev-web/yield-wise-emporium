@@ -13,15 +13,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Create Supabase client
+  // Create Supabase client, forwarding the user's JWT so RLS policies see auth.uid()
+  const authHeader = req.headers.get("Authorization");
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { global: { headers: { Authorization: authHeader ?? "" } } }
   );
 
   try {
     // Authenticate user
-    const authHeader = req.headers.get("Authorization")!;
+    if (!authHeader) {
+      throw new Error("No Authorization header");
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
