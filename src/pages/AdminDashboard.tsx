@@ -7,6 +7,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { ProductsManagement } from "@/components/admin/ProductsManagement";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import { UsersManagement } from "@/components/admin/UsersManagement";
+import { toast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
   const { user, profile, loading } = useAuth();
@@ -15,8 +16,19 @@ const AdminDashboard = () => {
   const tab = searchParams.get("tab") || "products";
 
   useEffect(() => {
-    if (!loading && (!user || profile?.role !== "admin")) {
-      navigate("/auth");
+    if (!loading) {
+      if (!user) {
+        // Not logged in - redirect to auth with return URL
+        navigate("/auth?redirect=/admin");
+      } else if (profile?.role !== "admin") {
+        // Logged in but not admin - redirect to user dashboard
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You need admin privileges to access the admin panel.",
+        });
+        navigate("/dashboard");
+      }
     }
   }, [user, profile, loading, navigate]);
 
@@ -28,8 +40,19 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!user || profile?.role !== "admin") {
+  if (!user) {
     return null;
+  }
+
+  if (profile?.role !== "admin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold text-destructive">Unauthorized Access</h1>
+          <p className="text-muted-foreground">You don't have permission to access the admin panel.</p>
+        </div>
+      </div>
+    );
   }
 
   const renderContent = () => {
