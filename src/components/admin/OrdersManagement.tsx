@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Eye } from "lucide-react";
+import { Loader2, Eye, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -166,6 +166,48 @@ export function OrdersManagement() {
     return colors[status] || "bg-gray-500";
   };
 
+  const exportToCSV = () => {
+    try {
+      const headers = ["Order ID", "Customer", "Email", "Total Amount", "Status", "Date", "Phone", "Shipping City"];
+      const csvData = orders.map(order => [
+        order.id,
+        order.profiles?.full_name || "N/A",
+        order.profiles?.email || "N/A",
+        order.total_amount,
+        order.status,
+        new Date(order.created_at).toLocaleDateString(),
+        order.phone,
+        order.shipping_city,
+      ]);
+
+      const csvContent = [
+        headers.join(","),
+        ...csvData.map(row => row.join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `orders-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Success",
+        description: "Orders exported to CSV successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to export orders",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -177,8 +219,12 @@ export function OrdersManagement() {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Orders Management</CardTitle>
+          <Button onClick={exportToCSV} variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>

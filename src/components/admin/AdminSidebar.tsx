@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Package, ShoppingCart, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -28,6 +28,7 @@ import {
 import { useState } from "react";
 
 const menuItems = [
+  { title: "Dashboard", url: "/admin?tab=dashboard", icon: LayoutDashboard },
   { title: "Products", url: "/admin?tab=products", icon: Package },
   { title: "Orders", url: "/admin?tab=orders", icon: ShoppingCart },
   { title: "Users", url: "/admin?tab=users", icon: Users },

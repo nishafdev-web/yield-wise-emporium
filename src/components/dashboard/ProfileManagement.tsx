@@ -10,7 +10,7 @@ import { toast } from '@/components/ui/use-toast';
 import { User, Mail, Phone, MapPin, Edit } from 'lucide-react';
 
 const ProfileManagement = () => {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile, userRole, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -70,8 +70,8 @@ const ProfileManagement = () => {
                 {profile?.full_name || 'No name set'}
               </h3>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Role: {profile?.role || 'User'}
+              <p className="text-xs text-muted-foreground mt-1 capitalize">
+                Role: {userRole || 'user'}
               </p>
             </div>
           </div>
