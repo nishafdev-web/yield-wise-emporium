@@ -22,13 +22,13 @@ export const useCart = () => {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchCartItems();
     } else {
       setCartItems([]);
       setCartCount(0);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
