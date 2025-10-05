@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          payload: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          payload?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          payload?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cart: {
         Row: {
           created_at: string
@@ -53,6 +77,27 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           actor_user_id: string | null
@@ -82,6 +127,38 @@ export type Database = {
           verb?: string
         }
         Relationships: []
+      }
+      inventory_logs: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          product_id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          product_id: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          product_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -171,57 +248,79 @@ export type Database = {
       }
       products: {
         Row: {
-          category: string
+          application_info: string | null
+          category: string | null
+          category_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
           id: string
           image_url: string | null
+          ingredients: string | null
           is_organic: boolean | null
           name: string
           original_price: number | null
           price: number
           safety_guidelines: string | null
+          safety_info: string | null
           safety_level: string | null
+          sku: string | null
           stock: number
           updated_at: string
           usage_instructions: string | null
         }
         Insert: {
-          category: string
+          application_info?: string | null
+          category?: string | null
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_organic?: boolean | null
           name: string
           original_price?: number | null
           price: number
           safety_guidelines?: string | null
+          safety_info?: string | null
           safety_level?: string | null
+          sku?: string | null
           stock?: number
           updated_at?: string
           usage_instructions?: string | null
         }
         Update: {
-          category?: string
+          application_info?: string | null
+          category?: string | null
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
+          ingredients?: string | null
           is_organic?: boolean | null
           name?: string
           original_price?: number | null
           price?: number
           safety_guidelines?: string | null
+          safety_info?: string | null
           safety_level?: string | null
+          sku?: string | null
           stock?: number
           updated_at?: string
           usage_instructions?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_created_by_fkey"
             columns: ["created_by"]
