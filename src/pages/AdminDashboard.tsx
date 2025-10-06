@@ -9,6 +9,8 @@ import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import { UsersManagement } from "@/components/admin/UsersManagement";
 import { DashboardOverview } from "@/components/admin/DashboardOverview";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
+import { CategoriesManagement } from "@/components/admin/CategoriesManagement";
 import { toast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
@@ -63,10 +65,14 @@ const AdminDashboard = () => {
         return <DashboardOverview />;
       case "products":
         return <ProductsManagement />;
+      case "categories":
+        return <CategoriesManagement />;
       case "orders":
         return <OrdersManagement />;
       case "users":
         return <UsersManagement />;
+      case "analytics":
+        return <AnalyticsDashboard />;
       case "settings":
         return <AdminSettings />;
       default:

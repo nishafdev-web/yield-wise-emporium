@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Plus, Minus, Trash2, Package, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { trackEvent } from '@/lib/analytics';
 
 const Cart = () => {
   const { user } = useAuth();
@@ -33,6 +34,12 @@ const Cart = () => {
 
     try {
       setProcessing(true);
+      trackEvent("checkout_start", { 
+        cart_total: getTotalPrice(), 
+        item_count: cartItems.length,
+        items: cartItems.map(item => ({ id: item.product_id, quantity: item.quantity }))
+      });
+      
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { cartItems }
       });

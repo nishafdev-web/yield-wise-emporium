@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Eye
 } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 interface ProductCardProps {
   id: string;
@@ -80,7 +81,13 @@ const ProductCard = ({
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
     onAddToCart?.(id);
+    trackEvent("add_to_cart", { product_id: id, product_name: name, price, category });
     setIsLoading(false);
+  };
+
+  const handleViewDetails = () => {
+    trackEvent("product_view", { product_id: id, product_name: name, price, category });
+    onViewDetails?.(id);
   };
 
   const handleWishlist = () => {
@@ -134,7 +141,7 @@ const ProductCard = ({
           variant="ghost"
           size="icon"
           className="absolute bottom-3 right-3 bg-primary/80 text-primary-foreground backdrop-blur-sm hover:bg-primary/90 opacity-0 group-hover:opacity-100 transition-smooth"
-          onClick={() => onViewDetails?.(id)}
+          onClick={handleViewDetails}
         >
           <Eye className="w-4 h-4" />
         </Button>
