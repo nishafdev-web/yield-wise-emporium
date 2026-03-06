@@ -18,8 +18,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, RefreshCw, UserCheck } from "lucide-react";
+import { useRealtime } from "@/hooks/useRealtime";
+import { StatusDot } from "./DashboardOverview";
 
 interface Profile {
   id: string;
@@ -31,7 +34,7 @@ interface Profile {
 }
 
 interface UserWithRole extends Profile {
-  role: 'admin' | 'user';
+  role: "admin" | "user";
 }
 
 export function UsersManagement() {
@@ -40,131 +43,102 @@ export function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchUsers();
-
-    const channel = supabase
-      .channel("users-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => {
-          fetchUsers();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_roles" },
-        () => {
-          fetchUsers();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
   const fetchUsers = async () => {
     try {
-      // Fetch all profiles
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [{ data: profilesData, error: profilesError }, { data: rolesData, error: rolesError }] =
+        await Promise.all([
+          supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+          supabase.from("user_roles").select("user_id, role"),
+        ]);
 
       if (profilesError) throw profilesError;
-
-      // Fetch all user roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
       if (rolesError) throw rolesError;
 
-      // Combine profiles with roles
-      const rolesMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
-      const usersWithRoles = profilesData?.map(profile => ({
+      const rolesMap = new Map(rolesData?.map((r) => [r.user_id, r.role]) || []);
+      const usersWithRoles: UserWithRole[] = (profilesData || []).map((profile) => ({
         ...profile,
-        role: rolesMap.get(profile.id) || 'user' as 'admin' | 'user'
-      })) || [];
+        role: (rolesMap.get(profile.id) as "admin" | "user") || "user",
+      }));
 
       setUsers(usersWithRoles);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
-    try {
-      setUpdatingRole(userId);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-      // Check if user already has a role entry
-      const { data: existingRole } = await supabase
+  const { status } = useRealtime("users-management", [
+    {
+      table: "profiles",
+      onInsert: (newProfile) => {
+        setUsers((prev) => [{ ...newProfile, role: "user" }, ...prev]);
+        toast({ title: "👤 New User Registered", description: newProfile.email });
+      },
+      onUpdate: (updated) => {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u))
+        );
+      },
+      onDelete: (deleted) => {
+        setUsers((prev) => prev.filter((u) => u.id !== deleted.id));
+        toast({ title: "User Removed", variant: "destructive" });
+      },
+    },
+    {
+      table: "user_roles",
+      onChange: fetchUsers,
+    },
+  ]);
+
+  const handleRoleChange = async (userId: string, newRole: "admin" | "user") => {
+    setUpdatingRole(userId);
+    try {
+      const { data: existing } = await supabase
         .from("user_roles")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (existingRole) {
-        // Update existing role
-        const { error } = await supabase
-          .from("user_roles")
-          .update({ role: newRole })
-          .eq("user_id", userId);
-
-        if (error) throw error;
+      let error;
+      if (existing) {
+        ({ error } = await supabase.from("user_roles").update({ role: newRole }).eq("user_id", userId));
       } else {
-        // Insert new role
-        const { error } = await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role: newRole });
-
-        if (error) throw error;
+        ({ error } = await supabase.from("user_roles").insert({ user_id: userId, role: newRole }));
       }
 
-      // Log activity
+      if (error) throw error;
+
       await supabase.from("events").insert({
         actor_user_id: (await supabase.auth.getUser()).data.user?.id,
         verb: "changed_role",
         object_type: "user",
         object_id: userId,
-        metadata: { new_role: newRole }
+        metadata: { new_role: newRole },
       });
 
-      toast({
-        title: "Success",
-        description: "User role updated successfully",
-      });
-
+      toast({ title: "✅ Role Updated", description: `User role set to "${newRole}"` });
       await fetchUsers();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setUpdatingRole(null);
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    return role === "admin" ? "default" : "secondary";
-  };
-
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const q = searchTerm.toLowerCase();
+    return (
+      u.email.toLowerCase().includes(q) ||
+      u.full_name?.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q) ||
+      u.city?.toLowerCase().includes(q)
+    );
+  });
 
   if (loading) {
     return (
@@ -176,71 +150,86 @@ export function UsersManagement() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Users Management</CardTitle>
-        <div className="relative mt-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, email, or role..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <CardTitle>Users Management</CardTitle>
+          <StatusDot status={status} />
+          <Badge variant="secondary">{users.length} total</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 w-56"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchUsers}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">
-                  {user.full_name || "N/A"}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.phone || "N/A"}</TableCell>
-                <TableCell>{user.city || "N/A"}</TableCell>
-                <TableCell>
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(user.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Select
-                    value={user.role}
-                    onValueChange={(value: 'admin' | 'user') => handleRoleChange(user.id, value)}
-                    disabled={updatingRole === user.id}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
+        {filteredUsers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">No users found</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Change Role</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No users found matching your search.
-          </div>
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user.id} className="animate-in fade-in transition-all">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {user.role === "admin" && <UserCheck className="h-4 w-4 text-primary" />}
+                      {user.full_name || "N/A"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">{user.email}</TableCell>
+                  <TableCell className="text-sm">{user.phone || "—"}</TableCell>
+                  <TableCell className="text-sm">{user.city || "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Select
+                      value={user.role}
+                      onValueChange={(v: "admin" | "user") => handleRoleChange(user.id, v)}
+                      disabled={updatingRole === user.id}
+                    >
+                      <SelectTrigger className="w-28">
+                        {updatingRole === user.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+                        ) : (
+                          <SelectValue />
+                        )}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
