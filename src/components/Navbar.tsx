@@ -73,7 +73,7 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
   };
 
   const navigationItems = [
-    { name: "Products", href: "/" },
+    { name: "Products", href: "#products" },
     { name: "Categories", href: "#categories" },
     { name: "Safety Guide", href: "#safety" },
     { name: "About", href: "#about" },
