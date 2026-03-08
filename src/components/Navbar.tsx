@@ -23,8 +23,7 @@ import {
   ShoppingCart, 
   Menu, 
   X,
-  Leaf,
-  Bell
+  Leaf
 } from "lucide-react";
 
 interface NavbarProps {
