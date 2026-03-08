@@ -33,7 +33,6 @@ import {
   Package, 
   ShoppingCart, 
   Settings, 
-  Bell, 
   LogOut,
   Home,
   Leaf
