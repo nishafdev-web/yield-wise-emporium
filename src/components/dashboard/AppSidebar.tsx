@@ -33,7 +33,6 @@ import {
   Package, 
   ShoppingCart, 
   Settings, 
-  Bell, 
   LogOut,
   Home,
   Leaf
@@ -44,7 +43,6 @@ const sidebarItems = [
   { title: 'Profile', url: '/dashboard?tab=profile', icon: User },
   { title: 'Orders', url: '/dashboard?tab=orders', icon: Package },
   { title: 'Cart', url: '/dashboard?tab=cart', icon: ShoppingCart },
-  { title: 'Notifications', url: '/dashboard?tab=notifications', icon: Bell },
   { title: 'Settings', url: '/dashboard?tab=settings', icon: Settings },
 ];
 
