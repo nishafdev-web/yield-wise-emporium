@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import ProfileManagement from '@/components/dashboard/ProfileManagement';
 import OrderHistory from '@/components/dashboard/OrderHistory';
 import CartManagement from '@/components/dashboard/CartManagement';
-import NotificationsPanel from '@/components/dashboard/NotificationsPanel';
 import { UserSettings } from '@/components/dashboard/UserSettings';
 import { User, Package, ShoppingCart, Settings, Bell, BarChart3, TrendingUp } from 'lucide-react';
 
