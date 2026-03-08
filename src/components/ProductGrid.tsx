@@ -96,8 +96,8 @@ const ProductGrid = ({ searchQuery: externalSearchQuery }: ProductGridProps) => 
   const categories = ["all", ...Array.from(new Set(products.map(p => p.category)))];
 
   // Transform products for ProductCard component
-  const transformedProducts = products.map(product => 
-    transformProduct(product, 4.5, Math.floor(Math.random() * 200) + 50)
+  const transformedProducts = products.map((product, index) => 
+    transformProduct(product, index, 4.5, Math.floor(Math.random() * 200) + 50)
   );
 
   const handleAddToCart = async (id: string) => {
