@@ -90,7 +90,7 @@ const AboutSection = () => {
           {/* Left Content */}
           <div>
             <h3 className="text-2xl font-bold text-foreground mb-6">
-              Why Choose AgroMart?
+              Why Choose Our System?
             </h3>
             
             <div className="space-y-4 mb-8">

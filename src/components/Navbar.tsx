@@ -92,8 +92,8 @@ const Navbar = ({ cartItemsCount, onSearch }: NavbarProps) => {
               <Leaf className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-primary">AgroMart</h1>
-              <p className="text-xs text-muted-foreground">Agricultural Solutions</p>
+              <h1 className="text-xl font-bold text-primary">PMS</h1>
+              <p className="text-xs text-muted-foreground">Pesticide Management</p>
             </div>
           </div>
 
