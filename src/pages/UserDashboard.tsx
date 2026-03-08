@@ -35,8 +35,6 @@ const UserDashboard = () => {
         return <OrderHistory />;
       case 'cart':
         return <CartManagement />;
-      case 'notifications':
-        return <NotificationsPanel />;
       case 'settings':
         return <UserSettings />;
       default:
