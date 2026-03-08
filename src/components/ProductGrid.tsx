@@ -15,11 +15,19 @@ import {
 } from "lucide-react";
 import productImage from "@/assets/product-pesticide-1.jpg";
 
+// Generate a unique placeholder image per product using its ID as seed
+const getProductImage = (product: any) => {
+  if (product.image_url) return product.image_url;
+  // Use a hash of the product id to pick a unique picsum seed
+  const seed = product.id ? product.id.replace(/-/g, '').slice(0, 8) : Math.random().toString(36).slice(2, 10);
+  return `https://picsum.photos/seed/${seed}/400/400`;
+};
+
 // Transform product data for ProductCard component
 const transformProduct = (product: any, averageRating: number = 4.5, reviewCount: number = 0) => ({
   id: product.id,
   name: product.name,
-  image: product.image_url || productImage,
+  image: getProductImage(product),
   price: product.price,
   originalPrice: product.original_price,
   rating: averageRating,
