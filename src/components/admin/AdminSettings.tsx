@@ -26,13 +26,13 @@ export const AdminSettings = () => {
   const [logoPreview, setLogoPreview] = useState<string>("");
   
   // Site Settings
-  const [siteName, setSiteName] = useState("AgroMart");
-  const [siteDescription, setSiteDescription] = useState("Premium Agricultural Solutions");
-  const [contactEmail, setContactEmail] = useState("admin@agromart.com");
-  const [supportEmail, setSupportEmail] = useState("support@agromart.com");
+  const [siteName, setSiteName] = useState("Pesticide Management System");
+  const [siteDescription, setSiteDescription] = useState("Premium Pesticide Management Solutions");
+  const [contactEmail, setContactEmail] = useState("admin@pms.com");
+  const [supportEmail, setSupportEmail] = useState("support@pms.com");
   
   // Email Templates
-  const [welcomeEmailTemplate, setWelcomeEmailTemplate] = useState("Welcome to AgroMart!");
+  const [welcomeEmailTemplate, setWelcomeEmailTemplate] = useState("Welcome to Pesticide Management System!");
   const [orderConfirmationTemplate, setOrderConfirmationTemplate] = useState("Your order has been confirmed.");
   
   // Notification Settings
