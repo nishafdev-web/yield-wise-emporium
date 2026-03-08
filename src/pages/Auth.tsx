@@ -73,7 +73,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <div className="flex items-center gap-2">
               <Leaf className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">AgroMart</span>
+              <span className="text-2xl font-bold text-primary">Pesticide Management System</span>
             </div>
           </div>
           <CardTitle className="text-2xl">Welcome</CardTitle>

@@ -49,13 +49,13 @@ const AboutSection = () => {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
             <Globe className="w-4 h-4 mr-2" />
-            About AgroMart
+            About Us
           </Badge>
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Your Trusted Agricultural Partner
+            Your Trusted Pesticide Management Partner
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            For over 15 years, AgroMart has been at the forefront of providing premium agricultural solutions 
+            For over 15 years, our Pesticide Management System has been at the forefront of providing premium agricultural solutions 
             to farmers across the region. Our commitment to quality, safety, and innovation has made us the 
             preferred choice for sustainable farming practices.
           </p>
@@ -90,7 +90,7 @@ const AboutSection = () => {
           {/* Left Content */}
           <div>
             <h3 className="text-2xl font-bold text-foreground mb-6">
-              Why Choose AgroMart?
+              Why Choose Our System?
             </h3>
             
             <div className="space-y-4 mb-8">
