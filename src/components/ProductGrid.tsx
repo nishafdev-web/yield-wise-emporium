@@ -13,21 +13,39 @@ import {
   List,
   SlidersHorizontal
 } from "lucide-react";
-import productImage from "@/assets/product-pesticide-1.jpg";
+import herbicideImage from "@/assets/pesticide-herbicide.jpg";
+import insecticideImage from "@/assets/pesticide-insecticide.jpg";
+import fungicideImage from "@/assets/pesticide-fungicide.jpg";
+import fertilizerImage from "@/assets/pesticide-fertilizer.jpg";
+import rodenticideImage from "@/assets/pesticide-rodenticide.jpg";
+import generalImage from "@/assets/pesticide-general.jpg";
 
-// Generate a unique placeholder image per product using its ID as seed
-const getProductImage = (product: any) => {
+const categoryImageMap: Record<string, string> = {
+  herbicide: herbicideImage,
+  insecticide: insecticideImage,
+  fungicide: fungicideImage,
+  fertilizer: fertilizerImage,
+  rodenticide: rodenticideImage,
+};
+
+// Pick image based on category, or rotate through all images by product index
+const allImages = [herbicideImage, insecticideImage, fungicideImage, fertilizerImage, rodenticideImage, generalImage];
+let productImageIndex = 0;
+
+const getProductImage = (product: any, index: number) => {
   if (product.image_url) return product.image_url;
-  // Use a hash of the product id to pick a unique picsum seed
-  const seed = product.id ? product.id.replace(/-/g, '').slice(0, 8) : Math.random().toString(36).slice(2, 10);
-  return `https://picsum.photos/seed/${seed}/400/400`;
+  const cat = (product.category || "").toLowerCase();
+  for (const key of Object.keys(categoryImageMap)) {
+    if (cat.includes(key)) return categoryImageMap[key];
+  }
+  return allImages[index % allImages.length];
 };
 
 // Transform product data for ProductCard component
-const transformProduct = (product: any, averageRating: number = 4.5, reviewCount: number = 0) => ({
+const transformProduct = (product: any, index: number, averageRating: number = 4.5, reviewCount: number = 0) => ({
   id: product.id,
   name: product.name,
-  image: getProductImage(product),
+  image: getProductImage(product, index),
   price: product.price,
   originalPrice: product.original_price,
   rating: averageRating,
@@ -78,8 +96,8 @@ const ProductGrid = ({ searchQuery: externalSearchQuery }: ProductGridProps) => 
   const categories = ["all", ...Array.from(new Set(products.map(p => p.category)))];
 
   // Transform products for ProductCard component
-  const transformedProducts = products.map(product => 
-    transformProduct(product, 4.5, Math.floor(Math.random() * 200) + 50)
+  const transformedProducts = products.map((product, index) => 
+    transformProduct(product, index, 4.5, Math.floor(Math.random() * 200) + 50)
   );
 
   const handleAddToCart = async (id: string) => {
