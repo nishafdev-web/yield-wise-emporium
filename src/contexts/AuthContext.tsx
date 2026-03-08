@@ -34,17 +34,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   
 
-  // Fetch user profile and role
+  // Fetch user profile and role — auto-creates profile if missing (e.g. after data wipe)
   const fetchProfile = async (userId: string) => {
     try {
-      // Fetch profile
-      const { data: profileData, error: profileError } = await supabase
+      // Try fetching the profile
+      let { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      // If no profile exists, create one from auth session data
+      if (!profileData) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        const email = authUser?.email ?? '';
+        const fullName = authUser?.user_metadata?.full_name ?? email;
+
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: userId, email, full_name: fullName })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+        } else {
+          profileData = newProfile;
+        }
+      }
+
       setProfile(profileData);
 
       // Fetch user role from secure user_roles table
@@ -56,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (roleError) {
         console.error('Error fetching role:', roleError);
-        setUserRole('user'); // Default to user if no role found
+        setUserRole('user');
       } else {
         setUserRole(roleData?.role || 'user');
       }
