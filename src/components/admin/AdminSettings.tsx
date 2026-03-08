@@ -225,7 +225,7 @@ export const AdminSettings = () => {
               id="site-name"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
-              placeholder="AgroMart"
+              placeholder="Pesticide Management System"
             />
           </div>
           <div className="space-y-2">
@@ -234,7 +234,7 @@ export const AdminSettings = () => {
               id="site-description"
               value={siteDescription}
               onChange={(e) => setSiteDescription(e.target.value)}
-              placeholder="Premium Agricultural Solutions"
+              placeholder="Premium Pesticide Management Solutions"
               rows={3}
             />
           </div>
@@ -246,7 +246,7 @@ export const AdminSettings = () => {
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="admin@agromart.com"
+                placeholder="admin@pms.com"
               />
             </div>
             <div className="space-y-2">
@@ -256,7 +256,7 @@ export const AdminSettings = () => {
                 type="email"
                 value={supportEmail}
                 onChange={(e) => setSupportEmail(e.target.value)}
-                placeholder="support@agromart.com"
+                placeholder="support@pms.com"
               />
             </div>
           </div>
